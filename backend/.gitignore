@@ -1,0 +1,28 @@
+# Backend-local ignores (paths are relative to this folder)
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Local data / generated files
+data/
+instance/
+*.sqlite3
+*.db
+
+# Environment files
+.env
+.env.local
+
+# Virtualenvs
+venv/
+.venv/
+
+# Tooling caches
+.mypy_cache/
+.pytest_cache/
+
+# Editor / OS files
+.DS_Store
+.vscode/
+.idea/

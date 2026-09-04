@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DocChat, a focused PDF conversation workspace.">
+  <title>DocChat | Ask your documents</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="DocChat home">
+        <span class="brand-mark" aria-hidden="true">D</span>
+        <span>DocChat</span>
+      </a>
+      <div class="connection-status" title="Backend connection mode">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="mode-label">Demo mode</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section id="chat-window" class="chat-window" aria-live="polite" aria-label="Conversation">
+        <div id="welcome-state" class="welcome-state">
+          <div class="welcome-kicker">YOUR DOCUMENT DESK</div>
+          <h1>Make sense of the fine print.</h1>
+          <p>Drop in a PDF, then ask the questions that matter. DocChat keeps the conversation focused on what you brought to the table.</p>
+          <div class="suggestion-grid" aria-label="Suggested prompts">
+            <button class="suggestion" type="button" data-prompt="Give me a concise summary of this document.">
+              <span class="suggestion-icon" aria-hidden="true">01</span>
+              <span>Summarize this document</span>
+              <span class="suggestion-arrow" aria-hidden="true">&#8599;</span>
+            </button>
+            <button class="suggestion" type="button" data-prompt="What are the key dates and deadlines?">
+              <span class="suggestion-icon" aria-hidden="true">02</span>
+              <span>Find key dates &amp; deadlines</span>
+              <span class="suggestion-arrow" aria-hidden="true">&#8599;</span>
+            </button>
+            <button class="suggestion" type="button" data-prompt="What are the main risks or obligations I should know about?">
+              <span class="suggestion-icon" aria-hidden="true">03</span>
+              <span>Spot risks &amp; obligations</span>
+              <span class="suggestion-arrow" aria-hidden="true">&#8599;</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="composer-area" aria-label="Message composer">
+        <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+        <div id="file-preview" class="file-preview" hidden></div>
+        <form id="input-bar" class="input-bar">
+            <input type="file" id="file-input" accept="application/pdf,.pdf" multiple hidden>
+          <button id="upload-btn" class="upload-button" type="button" aria-label="Attach a PDF" title="Attach a PDF">
+            <span aria-hidden="true">+</span>
+          </button>
+          <textarea id="text-input" rows="1" placeholder="Ask about your document..." aria-label="Message"></textarea>
+          <button id="send-btn" class="send-button" type="submit" aria-label="Send message" title="Send message">
+            <span class="send-label">Send</span>
+            <span class="send-icon" aria-hidden="true">&#8593;</span>
+          </button>
+        </form>
+        <p class="composer-note"><span aria-hidden="true">&#9679;</span> PDF files only, up to 20 MB</p>
+      </section>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

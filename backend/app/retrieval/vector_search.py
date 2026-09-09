@@ -7,6 +7,7 @@ def similarity_search(query_vector, limit=5):
             id,
             content,
             source,
+            file_name,
             page,
             embedding <=> %s::vector AS distance
         FROM document_chunks

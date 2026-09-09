@@ -56,6 +56,7 @@ def init_db():
                     content TEXT NOT NULL,
                     content_hash TEXT NOT NULL,
                     source TEXT,
+                    file_name TEXT,
                     page INTEGER,
                     embedding VECTOR(3072),
                     UNIQUE(content_hash)
@@ -71,6 +72,18 @@ def init_db():
                         WHERE table_name = 'document_chunks' AND column_name = 'content_hash'
                     ) THEN
                         ALTER TABLE document_chunks ADD COLUMN content_hash TEXT;
+                    END IF;
+                END$$;
+            """)
+
+            cursor.execute("""
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name = 'document_chunks' AND column_name = 'file_name'
+                    ) THEN
+                        ALTER TABLE document_chunks ADD COLUMN file_name TEXT;
                     END IF;
                 END$$;
             """)

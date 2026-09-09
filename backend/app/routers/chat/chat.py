@@ -41,7 +41,7 @@ async def chat(request: Request, message: str | None = Form(None), file: UploadF
             raise HTTPException(status_code=400, detail="Only PDF files are accepted")
 
         try:
-            unique_name = await run_in_threadpool(save_and_index_upload, file)
+            unique_name = await run_in_threadpool(save_and_index_upload, file, file_name=file.filename)
         except Exception:
             raise HTTPException(status_code=500, detail="Failed to index uploaded PDF")
 
@@ -74,7 +74,7 @@ async def upload_pdf(file: UploadFile = File(...)):
 
     # Trigger indexing in a threadpool so the request returns quickly
     try:
-        await run_in_threadpool(index_pdf_file, str(dest))
+        await run_in_threadpool(index_pdf_file, str(dest), file.filename)
     except Exception:
         # Indexing errors should not expose internals to the frontend
         raise HTTPException(status_code=500, detail="Failed to start indexing")

@@ -17,7 +17,7 @@ import uuid
 logger = logging.getLogger(__name__)
 
 
-def index_pdf_file(pdf_path: str) -> None:
+def index_pdf_file(pdf_path: str, file_name: str = "") -> None:
     """Index a specific PDF file path (used for uploaded PDFs)."""
     pdf_file = Path(pdf_path)
     if not pdf_file.exists() or not pdf_file.is_file():
@@ -34,6 +34,10 @@ def index_pdf_file(pdf_path: str) -> None:
     if not all_docs:
         return
 
+    citation_file_name = Path(file_name).name if file_name else pdf_file.name
+    for doc in all_docs:
+        doc.metadata["file_name"] = citation_file_name
+
     chunks = split_documents(1000, 100, all_docs)
     for i, doc in enumerate(chunks, start=1):
         print(f"Chunk {i} size: {len(doc.page_content)} characters")
@@ -47,8 +51,10 @@ def index_pdf_file(pdf_path: str) -> None:
         return
 
     insert_sql = """
-        INSERT INTO document_chunks (content, content_hash, source, page, embedding)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO document_chunks (
+            content, content_hash, source, file_name, page, embedding
+        )
+        VALUES (%s, %s, %s, %s, %s, %s)
     """
 
     with get_connection() as conn:
@@ -74,6 +80,7 @@ def index_pdf_file(pdf_path: str) -> None:
                         doc.page_content,
                         content_hash,
                         doc.metadata.get("source"),
+                        doc.metadata.get("file_name"),
                         doc.metadata.get("page"),
                         vec,
                     ),
@@ -82,14 +89,13 @@ def index_pdf_file(pdf_path: str) -> None:
         conn.commit()
 
 
-def save_and_index_upload(upload: UploadFile, data_dir: Path | None = None) -> str:
+def save_and_index_upload(upload: UploadFile, file_name: str = "") -> str:
     """Save an UploadFile to the service data dir and index it.
 
     Returns the saved filename (relative name).
     This is synchronous so it can be called via `run_in_threadpool`.
     """
-    if data_dir is None:
-        data_dir = Path(__file__).parents[1] / "data"
+    data_dir = Path(__file__).parents[1] / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
     unique_name = f"uploaded_{uuid.uuid4().hex}.pdf"
@@ -106,7 +112,7 @@ def save_and_index_upload(upload: UploadFile, data_dir: Path | None = None) -> s
 
     # Index the saved file
     try:
-        index_pdf_file(str(dest))
+        index_pdf_file(str(dest), file_name)
     except Exception:
         logger.exception("Failed to index uploaded file: %s", dest)
         # propagate so caller can surface as 500 if desired
@@ -154,7 +160,6 @@ def handle_chat(message: str, top_k: int = 5) -> str:
         ai_msg = llm.invoke(messages)
     except Exception as e:
         return f"LLM error: {e}"
-
     # Extract a text reply from the returned AI message
     reply_text = extract_ai_reply(ai_msg)
     return reply_text
@@ -176,12 +181,18 @@ def build_context_from_retrieved(retrieved) -> str:
                 source = row.get("source")
                 page = row.get("page")
             else:
-                # tuple: (id, content, source, page, distance)
+                # tuple: (id, content, source, file_name, page, distance)
                 content = row[1]
                 source = row[2]
-                page = row[3]
+                file_name = row[3]
+                page = row[4]
 
-            parts.append(f"Source: {source} (page {page})\n{content}")
+            if isinstance(row, dict):
+                file_name = row.get("file_name")
+            source = file_name or source
+            parts.append(
+                f"Source: {file_name} (page {page})\n{content}"
+            )
         except Exception:
             logger.exception("Failed to extract context from retrieved row")
             continue
